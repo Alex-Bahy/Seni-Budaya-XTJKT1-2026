@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daftar Nilai SMK — 2025/2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --primary: #1e40af;
+  --primary-light: #3b82f6;
+  --primary-dark: #1e3a8a;
+  --accent: #f59e0b;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --bg: #f0f4ff;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --radius: 12px;
+  --shadow: 0 2px 12px rgba(30,64,175,0.08);
+  --freeze-shadow: 4px 0 8px rgba(30,64,175,0.10);
+  --freeze-w-no: 42px;
+  --freeze-w-nama: 170px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+header {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%);
+  color: #fff; padding: 18px 28px;
+  display: flex; align-items: center; gap: 16px;
+  box-shadow: 0 2px 16px rgba(30,64,175,0.25);
+}
+.header-icon { background: rgba(255,255,255,0.15); border-radius: 12px; padding: 10px; font-size: 1.7rem; line-height:1; flex-shrink:0; }
+header h1 { font-size: 1.2rem; font-weight: 700; }
+header p  { font-size: .8rem; opacity: .8; margin-top: 2px; }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.header-badge { background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 5px 14px; font-size: .76rem; font-weight: 600; white-space: nowrap; }
+
+.btn-home {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(255,255,255,0.18);
+  border: 1.5px solid rgba(255,255,255,0.40);
+  color: #fff;
+  padding: 7px 15px; border-radius: 10px;
+  font-size: .82rem; font-weight: 700;
+  text-decoration: none; white-space: nowrap;
+  transition: background .18s, border-color .18s, transform .15s;
+  backdrop-filter: blur(4px);
+}
+.btn-home:hover {
+  background: rgba(255,255,255,0.30);
+  border-color: rgba(255,255,255,0.70);
+  transform: translateY(-1px);
+}
+.btn-home .home-icon { font-size: 1rem; line-height: 1; }
+.btn-home .home-arrow { font-size: .75rem; opacity: .7; }
+
+main { max-width: 1500px; margin: 0 auto; padding: 20px 18px 60px; }
+
+.config-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 22px; margin-bottom: 16px; border: 1px solid var(--border); }
+.config-card h2 { font-size: .9rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.config-grid label { font-size: .72rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 3px; text-transform: uppercase; letter-spacing: .5px; }
+.config-grid input, .config-grid select { width: 100%; border: 1.5px solid var(--border); border-radius: 7px; padding: 7px 10px; font-size: .86rem; color: var(--text); background: #f8faff; outline: none; transition: border .2s; }
+.config-grid input:focus, .config-grid select:focus { border-color: var(--primary-light); }
+
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.stat-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 12px 14px; box-shadow: var(--shadow); text-align: center; }
+.stat-card .val { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+.stat-card .lbl { font-size: .7rem; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+.stat-card.green .val { color: var(--success); }
+.stat-card.orange .val { color: var(--warning); }
+.stat-card.red .val { color: var(--danger); }
+
+.action-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 15px; border-radius: 8px; font-size: .83rem; font-weight: 600; border: none; cursor: pointer; transition: all .18s; white-space: nowrap; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(30,64,175,.3); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #059669; transform: translateY(-1px); }
+.btn-accent  { background: var(--accent); color: #fff; }
+.btn-accent:hover  { background: #d97706; transform: translateY(-1px); }
+.btn-outline { background: var(--card); color: var(--primary); border: 1.5px solid var(--primary-light); }
+.btn-outline:hover { background: #eff6ff; }
+.search-box { margin-left: auto; display: flex; align-items: center; gap: 7px; background: var(--card); border: 1.5px solid var(--border); border-radius: 8px; padding: 6px 12px; }
+.search-box input { border: none; outline: none; font-size: .84rem; width: 150px; color: var(--text); background: transparent; }
+
+#loading-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 60px 20px; gap: 14px; color: var(--text-muted);
+}
+.loading-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid #dbeafe;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+#loading-state p { font-size: .9rem; font-weight: 600; }
+#loading-state small { font-size: .78rem; color: #94a3b8; }
+
+#empty-state {
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  padding: 60px 20px; gap: 10px; color: var(--text-muted); text-align: center;
+}
+#empty-state .empty-icon { font-size: 2.8rem; }
+#empty-state p { font-size: .9rem; font-weight: 600; }
+#empty-state small { font-size: .78rem; color: #94a3b8; max-width: 340px; line-height: 1.6; }
+
+.table-wrap { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); overflow: auto; position: relative; }
+table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: .82rem; table-layout: auto; }
+
+th.fr-no, td.fr-no {
+  position: sticky; left: 0; z-index: 4;
+  width: var(--freeze-w-no); min-width: var(--freeze-w-no); max-width: var(--freeze-w-no);
+  background: inherit;
+}
+th.fr-nama, td.fr-nama {
+  position: sticky; left: var(--freeze-w-no); z-index: 4;
+  width: var(--freeze-w-nama); min-width: var(--freeze-w-nama);
+  background: inherit;
+  box-shadow: var(--freeze-shadow);
+  text-align: left !important;
+}
+thead tr:first-child th.fr-no,
+thead tr:first-child th.fr-nama { background: #1e3a8a; z-index: 6; }
+thead tr:last-child th.fr-no,
+thead tr:last-child th.fr-nama  { background: #1e4fad; z-index: 6; }
+tbody tr:nth-child(even) td.fr-no,
+tbody tr:nth-child(even) td.fr-nama { background: #f7f9ff; }
+tbody tr:hover td.fr-no,
+tbody tr:hover td.fr-nama { background: #eff6ff; }
+tbody tr:nth-child(odd) td.fr-no,
+tbody tr:nth-child(odd) td.fr-nama  { background: #ffffff; }
+
+thead tr:first-child th {
+  background: #1e3a8a; color: #fff; padding: 10px 8px;
+  font-size: .72rem; letter-spacing: .6px; font-weight: 700; text-transform: uppercase;
+  text-align: center; position: sticky; top: 0; z-index: 3;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+thead tr:last-child th {
+  background: #1e4fad; color: #dce8ff; padding: 6px 5px;
+  font-size: .71rem; font-weight: 600; text-align: center;
+  position: sticky; top: 38px; z-index: 3;
+  border-bottom: 2px solid #3b82f6;
+}
+
+thead th.sep { border-left: 2px solid rgba(255,255,255,0.22); }
+tbody td.sep { border-left: 2px solid #dde6f5; }
+
+tbody tr { transition: background .1s; }
+tbody tr:nth-child(even) { background: #f7f9ff; }
+tbody tr:hover { background: #eff6ff; }
+tbody td { padding: 0; border-bottom: 1px solid #eef2fb; text-align: center; vertical-align: middle; }
+
+.col-nis  { width: 76px; min-width: 70px; }
+.col-nisn { width: 104px; min-width: 96px; }
+.col-jk   { width: 44px; min-width: 38px; }
+.col-f    { width: 56px; min-width: 52px; }
+.col-s    { width: 56px; min-width: 52px; }
+.col-avg  { width: 66px; min-width: 60px; }
+.col-sas  { width: 66px; min-width: 60px; }
+.col-rap  { width: 88px; min-width: 84px; }
+
+.freeze-text {
+  display: block; padding: 8px 6px;
+  font-size: .82rem; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  user-select: text;
+}
+td.fr-nama .freeze-text { font-weight: 600; padding-left: 10px; font-size: .83rem; }
+td.fr-no .freeze-text   { color: var(--text-muted); font-size: .75rem; font-weight: 600; text-align: center; }
+
+td .cell-in {
+  display: block; width: 100%; border: none; background: transparent;
+  font-size: .84rem; text-align: center; color: var(--text);
+  padding: 8px 4px; outline: none; transition: background .15s;
+  -moz-appearance: textfield;
+}
+td .cell-in::-webkit-inner-spin-button,
+td .cell-in::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+td .cell-in:focus { background: #dbeafe; border-radius: 4px; }
+
+.ro-cell {
+  display: block; padding: 8px 5px;
+  font-size: .81rem; color: var(--text-muted);
+  text-align: center;
+}
+
+.auto-cell { background: #f0faf5; }
+.auto-val  { display: inline-block; padding: 6px 5px; font-weight: 700; color: #0a6640; font-size: .82rem; }
+
+.rapor-badge { display: inline-flex; align-items: center; gap: 3px; padding: 3px 9px; border-radius: 20px; font-weight: 700; font-size: .79rem; }
+.rap-a { background: #d1fae5; color: #065f46; }
+.rap-b { background: #dbeafe; color: #1e40af; }
+.rap-c { background: #fef3c7; color: #92400e; }
+.rap-d { background: #fee2e2; color: #991b1b; }
+
+/* Formula info badge */
+.formula-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #eff6ff; border: 1px solid #bfdbfe;
+  border-radius: 8px; padding: 5px 12px;
+  font-size: .74rem; font-weight: 600; color: #1e40af;
+  margin-bottom: 10px;
+}
+.formula-badge span { color: #64748b; font-weight: 400; }
+
+.freeze-hint { font-size: .72rem; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+.freeze-hint span { background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 10px; font-weight: 600; font-size: .68rem; }
+
+#toast { position: fixed; bottom: 22px; right: 22px; background: var(--primary-dark); color: #fff; padding: 10px 18px; border-radius: 10px; font-size: .83rem; font-weight: 600; box-shadow: 0 6px 18px rgba(0,0,0,.2); opacity: 0; transform: translateY(8px); transition: all .3s; z-index: 999; pointer-events: none; }
+#toast.show { opacity: 1; transform: translateY(0); }
+#toast.success { background: var(--success); }
+#toast.error { background: var(--danger); }
+
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 500; align-items: center; justify-content: center; }
+.modal-bg.open { display: flex; }
+.modal { background: var(--card); border-radius: 16px; padding: 26px; width: 94%; max-width: 560px; box-shadow: 0 20px 60px rgba(0,0,0,.25); position: relative; max-height: 90vh; overflow-y: auto; }
+.modal h3 { font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 14px; }
+.modal p  { font-size: .84rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 8px; }
+.modal code { display: block; background: #1e293b; color: #86efac; border-radius: 8px; padding: 11px 13px; font-size: .72rem; margin: 8px 0; overflow-x: auto; white-space: pre; line-height: 1.6; }
+.modal-close { position: absolute; top: 12px; right: 14px; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--text-muted); }
+.modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+.icode { background:#f1f5f9; color:#1e40af; padding:2px 5px; border-radius:4px; display:inline; font-size:.78rem; }
+
+.spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+#save-progress { display:none; height:3px; background: #bfdbfe; border-radius:2px; margin-bottom:10px; overflow:hidden; }
+#save-progress-bar { height:100%; background: var(--primary); width:0%; transition: width .4s; border-radius:2px; }
+
+@media (max-width: 700px) {
+  header { padding: 12px 14px; flex-wrap: wrap; }
+  .header-badge { display: none; }
+  .btn-home span.home-label { display: none; }
+  .btn-home { padding: 7px 10px; }
+  main { padding: 12px 10px 50px; }
+  .search-box input { width: 110px; }
+  :root { --freeze-w-nama: 148px; }
+}
+@media print {
+  header, .action-bar, .config-card, #toast, .modal-bg, #save-progress, .freeze-hint, .formula-badge { display: none !important; }
+  .table-wrap { box-shadow: none; border: 1px solid #ccc; overflow: visible; }
+  table { font-size: .72rem; border-collapse: collapse; }
+  th.fr-no, td.fr-no, th.fr-nama, td.fr-nama { position: static; box-shadow: none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-icon">📋</div>
+  <div>
+    <h1>Daftar Nilai Siswa</h1>
+    <p>Sistem Penilaian SMK Negeri 1 Maluku Tengah · Tahun Pelajaran 2025/2026</p>
+  </div>
+  <div class="header-right">
+    <a href="https://alex-bahy.github.io/Portal-Kelas-XULP-2026/" class="btn-home" title="Kembali ke Portal Utama">
+      <span class="home-icon">🏠</span>
+      <span class="home-label">Portal Utama</span>
+      <span class="home-arrow">↗</span>
+    </a>
+    <div class="header-badge">🏫 Wakasek Kurikulum</div>
+  </div>
+</header>
+
+<main>
+  <div class="config-card">
+    <h2>⚙️ Konfigurasi</h2>
+    <div class="config-grid">
+      <div><label>Nama Sekolah</label><input id="cfg-sekolah" type="text" value="SMK Negeri 1 Maluku Tengah"></div>
+      <div><label>Mata Pelajaran</label><input id="cfg-mapel" type="text" value="Ketik Mata Pelajaran yang anda ampu"></div>
+      <div><label>Kelas / Rombel</label><input id="cfg-kelas" type="text" value="Ketik Nama Kelas"></div>
+      <div><label>Semester</label><select id="cfg-semester"><option value="Ganjil">Ganjil</option><option value="Genap" selected>Genap</option></select></div>
+      <div><label>Guru Pengampu</label><input id="cfg-guru" type="text" value="—"></div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="val" id="st-total">0</div><div class="lbl">Total Siswa</div></div>
+    <div class="stat-card green"><div class="val" id="st-avg">—</div><div class="lbl">Rata-rata Rapor</div></div>
+    <div class="stat-card green"><div class="val" id="st-lulus">0</div><div class="lbl">Tuntas ≥75</div></div>
+    <div class="stat-card red"><div class="val" id="st-remedial">0</div><div class="lbl">Remedial &lt;75</div></div>
+    <div class="stat-card orange"><div class="val" id="st-max">—</div><div class="lbl">Nilai Tertinggi</div></div>
+    <div class="stat-card orange"><div class="val" id="st-min">—</div><div class="lbl">Nilai Terendah</div></div>
+  </div>
+
+  <div id="save-progress"><div id="save-progress-bar"></div></div>
+
+  <div class="action-bar">
+    <button class="btn btn-success" id="btn-sync" onclick="syncToSheets()">☁️ Simpan ke Google Sheets</button>
+    <button class="btn btn-accent" onclick="exportExcel()">📥 Download Excel</button>
+    <button class="btn btn-outline" onclick="loadFromSheets(true)">🔄 Muat Ulang dari Sheets</button>
+    <button class="btn btn-outline" onclick="printTable()">🖨️ Cetak</button>
+    <button class="btn btn-outline" onclick="document.getElementById('modal-setup').classList.add('open')">❓ Panduan Setup</button>
+    <div class="search-box">
+      🔍 <input id="search-input" type="text" placeholder="Cari nama / NIS…" oninput="filterTable()">
+    </div>
+  </div>
+
+  <div class="formula-badge">
+    📐 Rumus Nilai Rapor: <strong>40% Formatif</strong> <span>+</span> <strong>40% Sumatif</strong> <span>+</span> <strong>20% SAS</strong>
+    &nbsp;·&nbsp; <span>Nilai Rapor = (Avg F × 0,4) + (Avg S × 0,4) + (SAS × 0,2)</span>
+  </div>
+
+  <div class="freeze-hint">
+    <span>📌 Kolom Terkunci</span> Kolom No &amp; Nama Siswa tetap terlihat saat tabel digeser ke kanan
+  </div>
+
+  <div class="table-wrap">
+    <div id="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Memuat data dari Google Sheets…</p>
+      <small>Mohon tunggu sebentar</small>
+    </div>
+
+    <div id="empty-state">
+      <div class="empty-icon">📭</div>
+      <p id="empty-title">Tidak ada data</p>
+      <small id="empty-desc">Data siswa belum tersedia di Google Sheets, atau URL GAS_URL belum dikonfigurasi dengan benar.</small>
+    </div>
+
+    <table id="nilai-table" style="display:none">
+      <thead>
+        <tr>
+          <th rowspan="2" class="fr-no">No</th>
+          <th rowspan="2" class="fr-nama">Nama Siswa</th>
+          <th rowspan="2" class="col-nis sep">NIS</th>
+          <th rowspan="2" class="col-nisn">NISN</th>
+          <th rowspan="2" class="col-jk">J/K</th>
+          <th colspan="4" class="sep">NILAI FORMATIF (40%)</th>
+          <th colspan="4" class="sep">NILAI SUMATIF (40%)</th>
+          <th rowspan="2" class="col-sas sep">SAS (20%)</th>
+          <th rowspan="2" class="col-rap sep" title="Nilai Rapor = (Avg Formatif × 40%) + (Avg Sumatif × 40%) + (SAS × 20%)">Nilai Rapor</th>
+        </tr>
+        <tr>
+          <th class="col-f sep">F1</th>
+          <th class="col-f">F2</th>
+          <th class="col-f">F3</th>
+          <th class="col-avg">Avg F</th>
+          <th class="col-s sep">S1</th>
+          <th class="col-s">S2</th>
+          <th class="col-s">S3</th>
+          <th class="col-avg">Avg S</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Modal Setup -->
+<div class="modal-bg" id="modal-setup">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modal-setup').classList.remove('open')">✕</button>
+    <h3>🔧 Panduan Setup Google Sheets</h3>
+    <p><strong>Langkah 1.</strong> Buka spreadsheet → klik <em>Extensions → Apps Script</em>.</p>
+    <p><strong>Langkah 2.</strong> Hapus kode lama, paste kode ini:</p>
+    <code>const SHEET_ID = "1ncWuZxFDaDqNFYNn2Co052JvGYYBdSn-nzrcBhi4jZ8";
+const SHEET_NAME = "Sheet1";
+
+function doPost(e) {
+  try {
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const sh = ss.getSheetByName(SHEET_NAME);
+    const rows = JSON.parse(e.postData.contents);
+    const last = sh.getLastRow();
+    if (last > 1) sh.getRange(2,1,last-1,15).clearContent();
+    rows.forEach((r,i) => {
+      sh.getRange(i+2,1,1,15).setValues([[
+        r.no,r.nama,r.nis,r.nisn,r.jk,
+        r.f1,r.f2,r.f3,r.avgF,
+        r.s1,r.s2,r.s3,r.avgS,
+        r.sas,r.rapor
+      ]]);
+    });
+    return ContentService
+      .createTextOutput(JSON.stringify({status:"ok",rows:rows.length}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({status:"error",msg:err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  if (e.parameter.data) {
+    try {
+      const ss = SpreadsheetApp.openById(SHEET_ID);
+      const sh = ss.getSheetByName(SHEET_NAME);
+      const rows = JSON.parse(decodeURIComponent(e.parameter.data));
+      const last = sh.getLastRow();
+      if (last > 1) sh.getRange(2,1,last-1,15).clearContent();
+      rows.forEach((r,i) => {
+        sh.getRange(i+2,1,1,15).setValues([[
+          r.no,r.nama,r.nis,r.nisn,r.jk,
+          r.f1,r.f2,r.f3,r.avgF,
+          r.s1,r.s2,r.s3,r.avgS,
+          r.sas,r.rapor
+        ]]);
+      });
+      return ContentService
+        .createTextOutput(JSON.stringify({status:"ok",rows:rows.length}))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch(err) {
+      return ContentService
+        .createTextOutput(JSON.stringify({status:"error",msg:err.toString()}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sh = ss.getSheetByName(SHEET_NAME);
+  const data = sh.getDataRange().getValues().slice(1)
+    .filter(r=>r[1]).map(r=>({
+      no:r[0],nama:r[1],nis:r[2],nisn:r[3],jk:r[4],
+      f1:r[5],f2:r[6],f3:r[7],avgF:r[8],
+      s1:r[9],s2:r[10],s3:r[11],avgS:r[12],
+      sas:r[13],rapor:r[14]
+    }));
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}</code>
+    <p><strong>Langkah 3.</strong> Deploy → New Deployment → Web App. Set <em>Execute as: Me</em> &amp; <em>Who has access: Anyone</em>. Copy URL.</p>
+    <p><strong>Langkah 4.</strong> Buka file HTML ini, cari baris <code class="icode">const GAS_URL = "";</code> lalu paste URL Anda di antara tanda kutip. Simpan file.</p>
+    <p><strong>💡 Catatan CORS:</strong> Aplikasi otomatis mencoba POST dulu, lalu fallback ke GET jika ada blokir CORS.</p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="document.getElementById('modal-setup').classList.remove('open')">Mengerti, Tutup</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwbOKPJeQ-z5BGDhT_xIKLLd0n-LLtALJ94uA3xrjrt6-VeYBIn_qeU6KZibTV7tOkxaQ/exec";
+
+let rows = [], rowId = 0;
+
+const isBlank = v => v === '' || v === null || v === undefined || String(v).trim() === '';
+
+const avg = (...vals) => {
+  const nums = vals
+    .filter(v => !isBlank(v) && !isNaN(+v))
+    .map(Number);
+  return nums.length ? +(nums.reduce((a,b)=>a+b,0)/nums.length).toFixed(1) : '';
+};
+
+// FORMULA BARU: 40% Formatif + 40% Sumatif + 20% SAS
+const raporVal = (aF, aS, sas) => {
+  if (aF === '' || aS === '' ||
+      sas === '' || sas === null || sas === undefined || String(sas).trim() === '') return '';
+  return +((+aF * 0.4) + (+aS * 0.4) + (+sas * 0.2)).toFixed(1);
+};
+
+const grade = val => {
+  if (val === '' || val === null || isNaN(val)) return { label:'—', cls:'' };
+  const n = +val;
+  if (n >= 90) return { label:'A', cls:'rap-a' };
+  if (n >= 75) return { label:'B', cls:'rap-b' };
+  if (n >= 60) return { label:'C', cls:'rap-c' };
+  return { label:'D', cls:'rap-d' };
+};
+
+function showTable() {
+  document.getElementById('loading-state').style.display = 'none';
+  document.getElementById('empty-state').style.display   = 'none';
+  document.getElementById('nilai-table').style.display   = '';
+}
+function showLoading() {
+  document.getElementById('loading-state').style.display = '';
+  document.getElementById('empty-state').style.display   = 'none';
+  document.getElementById('nilai-table').style.display   = 'none';
+}
+function showEmpty(title, desc) {
+  document.getElementById('loading-state').style.display = 'none';
+  document.getElementById('empty-state').style.display   = 'flex';
+  document.getElementById('nilai-table').style.display   = 'none';
+  if (title) document.getElementById('empty-title').textContent = title;
+  if (desc)  document.getElementById('empty-desc').textContent  = desc;
+}
+
+function renderAll() { renderTable(); updateStats(); }
+
+function renderTable() {
+  if (!rows.length) { showEmpty('Belum ada data siswa', 'Spreadsheet kosong atau belum ada data yang dimasukkan.'); return; }
+  showTable();
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = '';
+  rows.forEach((r, i) => {
+    const aF  = avg(r.f1, r.f2, r.f3);
+    const aS  = avg(r.s1, r.s2, r.s3);
+    const rap = raporVal(aF, aS, r.sas);
+    const g   = grade(rap);
+    const tr  = document.createElement('tr');
+    tr.dataset.id = r.id;
+    tr.innerHTML = `
+      <td class="fr-no"><span class="freeze-text">${i+1}</span></td>
+      <td class="fr-nama"><span class="freeze-text" title="${esc(r.nama)}">${esc(r.nama)}</span></td>
+      <td class="col-nis sep"><span class="ro-cell">${esc(r.nis)}</span></td>
+      <td class="col-nisn"><span class="ro-cell" style="font-size:.75rem">${esc(r.nisn)}</span></td>
+      <td class="col-jk"><span class="ro-cell">${r.jk||'—'}</span></td>
+      <td class="col-f sep"><input class="cell-in" type="number" inputmode="numeric" min="0" max="100" value="${r.f1??''}" placeholder="—" onchange="updateNum(${r.id},'f1',this.value)"></td>
+      <td class="col-f"><input class="cell-in" type="number" inputmode="numeric" min="0" max="100" value="${r.f2??''}" placeholder="—" onchange="updateNum(${r.id},'f2',this.value)"></td>
+      <td class="col-f"><input class="cell-in" type="number" inputmode="numeric" min="0" max="100" value="${r.f3??''}" placeholder="—" onchange="updateNum(${r.id},'f3',this.value)"></td>
+      <td class="col-avg auto-cell"><span class="auto-val">${aF !== '' ? aF : '—'}</span></td>
+      <td class="col-s sep"><input class="cell-in" type="number" inputmode="numeric" min="0" max="100" value="${r.s1??''}" placeholder="—" onchange="updateNum(${r.id},'s1',this.value)"></td>
+      <td class="col-s"><input class="cell-in" type="number" inputmode="numeric" min="0" max="100" value="${r.s2??''}" placeholder="—" onchange="updateNum(${r.id},'s2',this.value)"></td>
+      <td class="col-s"><input class="cell-in" type="number" inputmode="numeric" min="0" max="100" value="${r.s3??''}" placeholder="—" onchange="updateNum(${r.id},'s3',this.value)"></td>
+      <td class="col-avg auto-cell"><span class="auto-val">${aS !== '' ? aS : '—'}</span></td>
+      <td class="col-sas sep"><input class="cell-in" type="number" inputmode="numeric" min="0" max="100" value="${r.sas??''}" placeholder="—" onchange="updateNum(${r.id},'sas',this.value)"></td>
+      <td class="col-rap auto-cell sep">
+        ${rap !== '' ? `<span class="rapor-badge ${g.cls}">${rap} ${g.label}</span>` : '<span style="color:var(--text-muted);font-size:.76rem">—</span>'}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+const esc = v => (v||'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+
+function updateNum(id, key, val) {
+  const r = rows.find(r => r.id === id);
+  if (r) {
+    r[key] = (val === '' || val === null || val === undefined) ? '' : +val;
+    renderAll();
+  }
+}
+
+function updateStats() {
+  const vals = rows.map(r => {
+    const aF = avg(r.f1, r.f2, r.f3);
+    const aS = avg(r.s1, r.s2, r.s3);
+    return raporVal(aF, aS, r.sas);
+  }).filter(v => v !== '');
+  document.getElementById('st-total').textContent    = rows.length;
+  document.getElementById('st-avg').textContent      = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : '—';
+  document.getElementById('st-lulus').textContent    = vals.filter(v=>v>=75).length;
+  document.getElementById('st-remedial').textContent = vals.filter(v=>v<75).length;
+  document.getElementById('st-max').textContent      = vals.length ? Math.max(...vals) : '—';
+  document.getElementById('st-min').textContent      = vals.length ? Math.min(...vals) : '—';
+}
+
+function filterTable() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  document.querySelectorAll('#table-body tr').forEach(tr => {
+    tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function buildPayload() {
+  return rows.filter(r => r.nama).map((r) => {
+    const aF = avg(r.f1, r.f2, r.f3);
+    const aS = avg(r.s1, r.s2, r.s3);
+    return {
+      nis:   r.nis || '',
+      f1:    isBlank(r.f1)  ? '' : r.f1,
+      f2:    isBlank(r.f2)  ? '' : r.f2,
+      f3:    isBlank(r.f3)  ? '' : r.f3,
+      avgF:  aF || '',
+      s1:    isBlank(r.s1)  ? '' : r.s1,
+      s2:    isBlank(r.s2)  ? '' : r.s2,
+      s3:    isBlank(r.s3)  ? '' : r.s3,
+      avgS:  aS || '',
+      sas:   isBlank(r.sas) ? '' : r.sas,
+      rapor: raporVal(aF, aS, r.sas) || ''
+    };
+  });
+}
+
+async function loadFromSheets(isManual = false) {
+  if (!GAS_URL || GAS_URL.trim() === '') {
+    showEmpty(
+      '⚠️ GAS_URL belum diisi',
+      'Buka file HTML ini, temukan baris const GAS_URL = "" lalu paste URL Apps Script Anda. Lihat Panduan Setup untuk detail.'
+    );
+    return;
+  }
+
+  showLoading();
+  if (isManual) showToast('🔄 Memuat ulang data dari Google Sheets…', '');
+
+  try {
+    const res  = await fetch(GAS_URL);
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error('Format respons tidak valid');
+
+    const norm = v => (v === 0 || v === '0' || v === null || v === undefined || String(v).trim() === '') ? '' : v;
+
+    rows = data
+      .filter(d => d.nama && String(d.nama).trim() !== '')
+      .map(d => ({
+        id: ++rowId,
+        no: d.no, nama: d.nama, nis: d.nis, nisn: d.nisn, jk: d.jk,
+        f1: norm(d.f1), f2: norm(d.f2), f3: norm(d.f3),
+        s1: norm(d.s1), s2: norm(d.s2), s3: norm(d.s3),
+        sas: norm(d.sas)
+      }));
+    renderAll();
+
+    if (isManual) showToast(`✅ ${rows.length} baris berhasil dimuat!`, 'success');
+  } catch (err) {
+    showEmpty(
+      '❌ Gagal memuat data',
+      `Tidak dapat mengambil data dari Google Sheets. Pastikan GAS_URL sudah benar dan Apps Script sudah di-deploy sebagai Web App. (${err.message})`
+    );
+    if (isManual) showToast('❌ Gagal memuat: ' + err.message, 'error');
+  }
+}
+
+async function syncToSheets() {
+  if (!GAS_URL || GAS_URL.trim() === '') {
+    showToast('⚠️ URL Apps Script belum diisi! Lihat Panduan Setup.', 'error');
+    document.getElementById('modal-setup').classList.add('open');
+    return;
+  }
+  const payload = buildPayload();
+  if (!payload.length) { showToast('⚠️ Tidak ada data untuk disimpan.', 'error'); return; }
+
+  const btn = document.getElementById('btn-sync');
+  btn.innerHTML = '<span class="spinner"></span> Menyimpan…'; btn.disabled = true;
+  const prog = document.getElementById('save-progress');
+  const bar  = document.getElementById('save-progress-bar');
+  prog.style.display = 'block'; bar.style.width = '25%';
+
+  try {
+    bar.style.width = '55%';
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    bar.style.width = '85%';
+    const json = await res.json();
+    bar.style.width = '100%';
+    if (json.status === 'ok') {
+      showToast(`✅ ${json.rows} data berhasil disimpan ke Google Sheets!`, 'success');
+    } else {
+      throw new Error(json.msg || 'Status error');
+    }
+  } catch(err) {
+    try {
+      bar.style.width = '45%';
+      showToast('🔄 Mencoba metode alternatif…', '');
+      const encoded = encodeURIComponent(JSON.stringify(payload));
+      await fetch(`${GAS_URL}?data=${encoded}`, { mode: 'no-cors' });
+      bar.style.width = '100%';
+      showToast(`✅ ${payload.length} data dikirim! Cek spreadsheet Anda.`, 'success');
+    } catch(err2) {
+      bar.style.width = '100%';
+      showToast('❌ Gagal: ' + err2.message, 'error');
+    }
+  } finally {
+    btn.innerHTML = '☁️ Simpan ke Google Sheets'; btn.disabled = false;
+    setTimeout(() => { prog.style.display='none'; bar.style.width='0%'; }, 1200);
+  }
+}
+
+function exportExcel() {
+  const sekolah = document.getElementById('cfg-sekolah').value;
+  const mapel   = document.getElementById('cfg-mapel').value;
+  const kelas   = document.getElementById('cfg-kelas').value;
+  const sem     = document.getElementById('cfg-semester').value;
+  const guru    = document.getElementById('cfg-guru').value;
+  const info = [
+    ['DAFTAR NILAI SISWA'],
+    [`Sekolah: ${sekolah}`, '', `Mata Pelajaran: ${mapel}`],
+    [`Kelas: ${kelas}`, '', `Semester: ${sem}`, '', `Guru: ${guru}`],
+    [`Rumus Nilai Rapor: 40% Formatif + 40% Sumatif + 20% SAS`],
+    [],
+    ['No','Nama Siswa','NIS','NISN','J/K',
+     'Formatif 1','Formatif 2','Formatif 3','Rata Formatif (40%)',
+     'Sumatif 1','Sumatif 2','Sumatif 3','Rata Sumatif (40%)','SAS (20%)','Nilai Rapor']
+  ];
+  rows.filter(r=>r.nama).forEach((r,i) => {
+    const aF = avg(r.f1,r.f2,r.f3), aS = avg(r.s1,r.s2,r.s3);
+    info.push([i+1,r.nama,r.nis,r.nisn,r.jk,
+      r.f1!==''?r.f1:'', r.f2!==''?r.f2:'', r.f3!==''?r.f3:'', aF!==''?aF:'',
+      r.s1!==''?r.s1:'', r.s2!==''?r.s2:'', r.s3!==''?r.s3:'', aS!==''?aS:'',
+      r.sas!==''?r.sas:'', raporVal(aF,aS,r.sas)!==''?raporVal(aF,aS,r.sas):'']);
+  });
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(info);
+  ws['!cols'] = [{wch:4},{wch:26},{wch:10},{wch:14},{wch:4},{wch:9},{wch:9},{wch:9},{wch:18},{wch:9},{wch:9},{wch:9},{wch:18},{wch:10},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Daftar Nilai');
+  XLSX.writeFile(wb, `Daftar_Nilai_${kelas.replace(/\s+/g,'_')}_${sem}.xlsx`);
+  showToast('📥 File Excel berhasil diunduh!', 'success');
+}
+
+function printTable() { window.print(); }
+
+let toastTimer;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = '', 3500);
+}
+
+loadFromSheets();
+</script>
+</body>
+</html>
